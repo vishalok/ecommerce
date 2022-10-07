@@ -2,7 +2,7 @@ let express = require('express');
 let categoryRouter = express.Router();
 
 let { categoryService } = require('../services/category.service');
-let { executeWithSync } = require('../connections/sequelize.connection');
+let { executeWithSync } = require('../connection/sequelize.connection');
 
 categoryRouter.get('/', function(request, response) {
     executeWithSync(categoryService
