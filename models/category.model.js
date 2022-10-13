@@ -1,34 +1,20 @@
-let { categorySchema } = require("../models/category.model");
-class CategoryService {
-
-    constructor() {
-        this.schema = categorySchema
-    }
-
-    createCategories(category) {
-        return this
-        .schema
-        .create(category);
-    }
-
-    getCategories() {
-        return this
-        .schema
-        .findAll();
-    }
-
-    getCategoryById(id) {
-        return this
-        .schema
-        .findOne({
-            where: {
-                id: id
-            }
-        });
-    }
-}
-
-let categoryService = new CategoryService();
-module.exports = {
-    categoryService
+const { DataTypes } = require('sequelize');
+module.exports = function(sequelize, Sequelize) {
+    const Category = sequelize.define("category", {
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
+        description: {
+            type: DataTypes.STRING
+        }
+    },{
+        tableName: 'categories'
+    });
+    return Category;
 }
