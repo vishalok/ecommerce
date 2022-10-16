@@ -1,5 +1,6 @@
 let { userService } = require('../services/user.service');
 let { roleService } = require('../services/role.service');
+let { jwtService } = require('../services/jwt.service');
 
 function checkMandatoryFields(request, response, next) {
     if(!request.body.name) {
@@ -8,6 +9,7 @@ function checkMandatoryFields(request, response, next) {
         response.end(JSON.stringify({
             message: 'Name Should Be Present'
         }));
+        return;
     }
 
     if(!request.body.email) {
@@ -16,6 +18,7 @@ function checkMandatoryFields(request, response, next) {
         response.end(JSON.stringify({
             message: 'email should be present'
         }));
+        return;
     }
 
     if(!request.body.password) {
@@ -24,6 +27,29 @@ function checkMandatoryFields(request, response, next) {
         response.end(JSON.stringify({
             message: 'password should be present'
         }));
+        return;
+    }
+    next();
+}
+
+function checkMandatoryFieldsForSignIn(request, response, next) {
+
+    if(!request.body.email) {
+        response.setHeader('content-type', 'application/json');
+        response.writeHead(400);
+        response.end(JSON.stringify({
+            message: 'email should be present'
+        }));
+        return;
+    }
+
+    if(!request.body.password) {
+        response.setHeader('content-type', 'application/json');
+        response.writeHead(400);
+        response.end(JSON.stringify({
+            message: 'password should be present'
+        }));
+        return;
     }
     next();
 }
@@ -32,7 +58,7 @@ function checkEmailDuplicate(request, response, next) {
     userService
     .findUserByEmail(request.body.email)
     .then((user) => {
-        if(user && user.length !== 0) {
+        if(user) {
             response.setHeader('content-type', 'application/json');
             response.writeHead(400);
             response.end(JSON.stringify({
@@ -53,7 +79,7 @@ function checkRolesExist(request, response, next) {
             let presentRoles = roles.map((role) => {
                 return role.dataValues
             });
-            
+
             let presentRoleObj = {};
             for(let role of presentRoles) {
                 let name = role.name;
@@ -77,8 +103,59 @@ function checkRolesExist(request, response, next) {
     }
 }
 
+function verifyJwt(request, response, next) {
+    try {
+        let token = request.headers['x-access-token'];
+        let decoded = jwtService.verifyAndDecodeJwt(token);
+        if(decoded.validated) {
+            request.decodedJwt = decoded.decodedJwt;
+            next();
+        } else {
+            response.setHeader('content-type', 'application/json');
+            response.writeHead(401);
+            response.end(JSON.stringify({
+                message: decoded.message
+            }));
+            return;
+        }
+    } catch(error) {
+        response.setHeader('content-type', 'application/json');
+        response.writeHead(401);
+        response.end(JSON.stringify({
+            message: error.message
+        }));
+        return;
+    }
+}
+
+function isAdmin(request, response, next) {
+    if(!request.decodedJwt) {
+        response.setHeader('content-type', 'application/json');
+        response.writeHead(401);
+        response.end(JSON.stringify({
+            message: 'Decoded Jwt is not present for check'
+        }));
+        return;
+    }
+
+    let roles = request.decodedJwt.roles;
+    let adminRole = roles.filter((role) => role === 'admin');
+    if(adminRole.length === 0) {
+        response.setHeader('content-type', 'application/json');
+        response.writeHead(403);
+        response.end(JSON.stringify({
+            message: 'User cannot access this resource'
+        }));
+        return;
+    }
+    next();
+}
+
 module.exports = {
     checkEmailDuplicate,
     checkMandatoryFields,
-    checkRolesExist
+    checkRolesExist,
+    checkMandatoryFieldsForSignIn,
+    verifyJwt,
+    isAdmin
 }
