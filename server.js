@@ -5,11 +5,23 @@ const app = require('./app');
 const db = require('./models/index');
 const serverConfig = require('./configs/server.config');
 
+
 require('./routes/product.route')(app);
 require('./routes/category.route')(app);
 require('./routes/auth.route')(app);
 require('./routes/cart.route')(app);
+/************** */
+let fs = require('fs');
+app.get('/',(req,res)=>{
+   fs.readFile('./html/index.html',(err,data) => {
+   
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.write(data);
+    return res.end();
+   });
+})
 
+/********* */
 db.sequelize.sync({
     force: true
 }).then(() => {
