@@ -4,7 +4,7 @@
     <strong><u>Description</u></strong>
     <br>A BackEnd application for e-commerce CRUD operation<br>
     <b>Project Title : </b>E-Commerce BackEnd App<br>
-    <b>Project by : </b><a href="https://github.com/pallab-nandi">Pallab Nandi</a>
+    <b>Project by : </b><a href="https://github.com/vishalok">Vishal Rathod</a>
 </p>
 <br/>
 <h2>About</h2>
